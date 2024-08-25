@@ -5,8 +5,6 @@ import { ThemeSwitcher } from "../ThemeSwitcher"
 export const Header = () => {
     const { data: session, status } = useSession()
 
-
-
     return (
         <header
             className="w-full h-[76px] bg-neutral-100 dark:bg-[#0f0f0f] flex items-center content-center text-black dark:text-white drop-shadow-md transition-colors" >
@@ -30,9 +28,9 @@ export const Header = () => {
                     ) : session ? (
                         <button
                             onClick={() => signOut()}
-                            className="py-2 px-8 rounded-3xl border border-black dark:border-white hover:font-bold cursor-pointer hover:scale-105 transition-all"
+                            className="py-2 px-8 lg:text-xl text-[10px] rounded-3xl border border-black dark:border-white hover:font-bold cursor-pointer hover:scale-105 transition-all"
                         >
-                            Olá, {session?.user?.name}
+                            Olá, {session.user?.name ? session?.user?.name.split(" ")[0] as string : ""}
                         </button>
                     ) : (
                         <button
