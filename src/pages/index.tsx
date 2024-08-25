@@ -5,7 +5,9 @@ import hero from "../assets/hero.png"
 export default function Home() {
   return (
     <div className="h-[calc(100vh-76px)] dark:bg-[#0f0f0f] transition-all">
-      <Head>Tarefas+ | Organize suas tarefas de forma fácil</Head>
+      <Head>
+        <title>Tarefas+ | Organize suas tarefas de forma fácil</title>
+      </Head>
       <main className="flex flex-col justify-center items-center h-full" >
         <div className="flex flex-col text-center items-center justify-center w-full" >
           <Image className="max-w-full object-contain h-auto md:w-[380px] w-[250px] drop-shadow-lg"

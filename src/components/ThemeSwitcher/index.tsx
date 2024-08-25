@@ -5,8 +5,6 @@ import React, { useContext } from 'react';
 export function ThemeSwitcher() {
     const { darkMode, toggleDarkMode } = useContext(ThemeContext)
 
-    console.log(darkMode)
-
     return (
         <button
             onClick={toggleDarkMode}
