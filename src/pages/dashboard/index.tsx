@@ -1,11 +1,49 @@
 import { Textarea } from "@/components/textarea";
+import { db } from "@/services/firebaseConnection";
+import { addDoc, collection } from "firebase/firestore";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import Head from "next/head";
+import { ChangeEvent, FormEvent, useState } from "react";
 import { FaTrash } from "react-icons/fa";
 import { FiShare2 } from "react-icons/fi";
 
-export default function Dashboard() {
+interface HomeProps {
+    user: {
+        email: string;
+    }
+}
+
+export default function Dashboard({ user }: HomeProps) {
+    const [input, setInput] = useState("")
+    const [publicTask, setPublicTask] = useState(false);
+
+    function handleChangePublic(e: ChangeEvent<HTMLInputElement>) {
+        setPublicTask(!publicTask)
+    }
+
+    async function handleRegisterTask(e: FormEvent) {
+        e.preventDefault()
+
+        if (input === "") {
+            return
+        }
+
+        try {
+            await addDoc(collection(db, "tasks"), {
+                task: input,
+                created: new Date(),
+                user: user?.email,
+                public: publicTask,
+            })
+
+            setInput("")
+            setPublicTask(false)
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
     return (
         <div className="dark:bg-[#0f0f0f] w-full dark:text-white transition-all" >
             <Head>
@@ -15,10 +53,15 @@ export default function Dashboard() {
                 <section className="max-w-5xl w-full px-5 pb-7 mt-14 drop-shadow-md" >
                     <div className="" >
                         <h1 className="mb-2 font-bold text-2xl" >Qual a sua tarefa?</h1>
-                        <form>
-                            <Textarea placeholder="Digite qual a sua tarefa?" />
+                        <form onSubmit={handleRegisterTask} >
+                            <Textarea
+                                value={input}
+                                onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setInput(e.target.value)}
+                                placeholder="Digite qual a sua tarefa?" />
                             <div className="flex items-center" >
                                 <input
+                                    checked={publicTask}
+                                    onChange={handleChangePublic}
                                     type="checkbox"
                                     className="w-5 h-5 my-4" />
                                 <label className="ml-2">Tarefa pública?</label>
@@ -71,6 +114,10 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
     }
 
     return {
-        props: {}
+        props: {
+            user: {
+                email: session.user.email
+            }
+        }
     }
 }
