@@ -1,10 +1,11 @@
 import { Textarea } from "@/components/textarea";
 import { db } from "@/services/firebaseConnection";
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, onSnapshot, orderBy, query, where } from "firebase/firestore";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import Head from "next/head";
-import { ChangeEvent, FormEvent, useState } from "react";
+import Link from "next/link";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { FaTrash } from "react-icons/fa";
 import { FiShare2 } from "react-icons/fi";
 
@@ -14,9 +15,18 @@ interface HomeProps {
     }
 }
 
+interface Tasks {
+    id: string;
+    task: string;
+    created: Date;
+    user: string;
+    public: boolean;
+}
+
 export default function Dashboard({ user }: HomeProps) {
     const [input, setInput] = useState("")
     const [publicTask, setPublicTask] = useState(false);
+    const [tasks, setTasks] = useState<Tasks[] | []>([])
 
     function handleChangePublic(e: ChangeEvent<HTMLInputElement>) {
         setPublicTask(!publicTask)
@@ -44,8 +54,46 @@ export default function Dashboard({ user }: HomeProps) {
         }
     }
 
+    useEffect(() => {
+        async function loadTarefas() {
+            const tarefasRef = collection(db, "tasks")
+            const q = query(
+                tarefasRef,
+                orderBy("created", "desc"),
+                where("user", "==", user?.email)
+            )
+
+            onSnapshot(q, (snapshot) => {
+                const data = snapshot.docs.map((doc) => ({
+                    id: doc.id,
+                    task: doc.data().task,
+                    created: doc.data().created,
+                    user: doc.data().user,
+                    public: doc.data().public,
+                }))
+
+                setTasks(data)
+            })
+        }
+
+        loadTarefas()
+    }, [user.email])
+
+    async function handleShare(id: string) {
+        await navigator.clipboard.writeText(
+            `${process.env.NEXT_PUBLIC_URL}/task/${id}`
+        )
+    }
+
+    async function handleDeleteTask(id: string) {
+        const docRef = doc(db, 'tasks', id)
+        await deleteDoc(docRef).then(() => {
+            alert("tarefa deletada")
+        })
+    }
+
     return (
-        <div className="dark:bg-[#0f0f0f] w-full dark:text-white transition-all" >
+        <div className="dark:bg-[#0f0f0f] w-full min-h-[calc(100vh-76px)] dark:text-white transition-all" >
             <Head>
                 <title>Tarefas+ | Painel de tarefas</title>
             </Head>
@@ -78,26 +126,41 @@ export default function Dashboard({ user }: HomeProps) {
                     <h1 className="text-2xl font-bold text-center mb-3">
                         Minhas tarefas
                     </h1>
-                    <article
-                        className="mb-14 leading-[150%] flex border p-5 rounded-lg dark:border-neutral-300 border-neutral-700 flex-col items-start" >
-                        <div className="flex items-center justify-center mb-2" >
-                            <label className="bg-[#3183ff] py-[2px] px-2 text-white rounded-[4px] text-sm" >Público</label>
-                            <button className="mx-2 cursor-pointer" >
-                                <FiShare2 size={22} color="#3183ff" />
-                            </button>
-                        </div>
-                        <div className="flex justify-between items-center w-full" >
-                            <p className="whitespace-pre-wrap" >
-                                Lorem ipsum dolor, sit amet consectetur adipisicing elit. Est vitae asperiores necessitatibus adipisci? Nulla ut nemo fugit ex exercitationem numquam eos. Quidem inventore dolorem, deleniti explicabo perspiciatis exercitationem commodi alias.
-                            </p>
-                            <button className="cursor-pointer" >
-                                <FaTrash size={24} color="#ea3140" />
-                            </button>
-                        </div>
-                    </article>
+                    {tasks && tasks.map((task) => (
+                        <article key={task.id}
+                            className="mb-14 leading-[150%] flex border p-5 rounded-lg dark:border-neutral-300 border-neutral-700 flex-col items-start" >
+                            <div className="flex items-center justify-center mb-2" >
+                                {task.public && (
+                                    <label className="bg-[#3183ff] py-[2px] px-2 text-white rounded-[4px] text-sm" >Público</label>
+                                )}
+                                <button className="mx-2 cursor-pointer" onClick={() => handleShare(task.id)} >
+                                    <FiShare2 size={22} color="#3183ff" />
+                                </button>
+                            </div>
+                            <div className="flex justify-between items-center w-full" >
+                                {task.public ? (
+                                    <Link href={`/task/${task.id}`}>
+                                        <p className="whitespace-pre-wrap" >
+                                            {task.task}
+                                        </p>
+                                        <span>Criado</span>
+                                    </Link>
+                                ) : (
+                                    <div >
+                                        <p className="whitespace-pre-wrap" >
+                                            {task.task}
+                                        </p>
+                                    </div>
+                                )}
+                                <button className="cursor-pointer" onClick={() => handleDeleteTask(task.id)} >
+                                    <FaTrash size={24} color="#ea3140" />
+                                </button>
+                            </div>
+                        </article>
+                    ))}
                 </section>
             </main>
-        </div>
+        </div >
     )
 }
 
