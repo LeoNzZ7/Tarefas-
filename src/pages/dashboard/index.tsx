@@ -1,5 +1,6 @@
 import { Textarea } from "@/components/textarea";
 import { db } from "@/services/firebaseConnection";
+import { Task as Tasks } from "@/types/taskType";
 import { addDoc, collection, deleteDoc, doc, onSnapshot, orderBy, query, where } from "firebase/firestore";
 import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
@@ -13,14 +14,6 @@ interface HomeProps {
     user: {
         email: string;
     }
-}
-
-interface Tasks {
-    id: string;
-    task: string;
-    created: Date;
-    user: string;
-    public: boolean;
 }
 
 export default function Dashboard({ user }: HomeProps) {
@@ -67,7 +60,7 @@ export default function Dashboard({ user }: HomeProps) {
                 const data = snapshot.docs.map((doc) => ({
                     id: doc.id,
                     task: doc.data().task,
-                    created: doc.data().created,
+                    created: new Date(doc.data().created.seconds * 1000).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }),
                     user: doc.data().user,
                     public: doc.data().public,
                 }))
@@ -143,13 +136,18 @@ export default function Dashboard({ user }: HomeProps) {
                                         <p className="whitespace-pre-wrap" >
                                             {task.task}
                                         </p>
-                                        <span>Criado</span>
+                                        <span className="text-sm text-neutral-400 mt-10" >
+                                            Adicionado em {task.created}
+                                        </span>
                                     </Link>
                                 ) : (
                                     <div >
                                         <p className="whitespace-pre-wrap" >
                                             {task.task}
                                         </p>
+                                        <span className="text-sm text-neutral-400 mt-10" >
+                                            Adicionado em {task.created}
+                                        </span>
                                     </div>
                                 )}
                                 <button className="cursor-pointer" onClick={() => handleDeleteTask(task.id)} >
