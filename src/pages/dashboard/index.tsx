@@ -1,4 +1,5 @@
 import { Textarea } from "@/components/textarea";
+import { ThemeContext } from "@/contexts/themeContext";
 import { db } from "@/services/firebaseConnection";
 import { Task as Tasks } from "@/types/taskType";
 import { addDoc, collection, deleteDoc, doc, onSnapshot, orderBy, query, where } from "firebase/firestore";
@@ -6,7 +7,8 @@ import { GetServerSideProps } from "next";
 import { getSession } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useContext, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { FaTrash } from "react-icons/fa";
 import { FiShare2 } from "react-icons/fi";
 
@@ -20,6 +22,8 @@ export default function Dashboard({ user }: HomeProps) {
     const [input, setInput] = useState("")
     const [publicTask, setPublicTask] = useState(false);
     const [tasks, setTasks] = useState<Tasks[] | []>([])
+
+    const { darkMode } = useContext(ThemeContext)
 
     function handleChangePublic(e: ChangeEvent<HTMLInputElement>) {
         setPublicTask(!publicTask)
@@ -40,10 +44,25 @@ export default function Dashboard({ user }: HomeProps) {
                 public: publicTask,
             })
 
+            toast.success("Tarefa adicionada com sucesso", {
+                icon: '✅',
+                style: {
+                    borderRadius: '10px',
+                    background: darkMode ? '#333' : "#fff",
+                    color: darkMode ? '#fff' : "#333",
+                },
+            })
             setInput("")
             setPublicTask(false)
         } catch (e) {
-            console.log(e)
+            toast.error("Ocorreu um erro ao adicionar a tarefa", {
+                icon: "❌",
+                style: {
+                    borderRadius: '10px',
+                    background: darkMode ? '#333' : "#fff",
+                    color: darkMode ? '#fff' : "#333",
+                },
+            })
         }
     }
 
@@ -81,7 +100,23 @@ export default function Dashboard({ user }: HomeProps) {
     async function handleDeleteTask(id: string) {
         const docRef = doc(db, 'tasks', id)
         await deleteDoc(docRef).then(() => {
-            alert("tarefa deletada")
+            toast.success("Tarefa excluída com sucesso", {
+                icon: '✅',
+                style: {
+                    borderRadius: '10px',
+                    background: darkMode ? '#333' : "#fff",
+                    color: darkMode ? '#fff' : "#333",
+                },
+            })
+        }).catch(() => {
+            toast.error("Ocorreu um erro ao tentar excluir a tarefa", {
+                icon: "❌",
+                style: {
+                    borderRadius: '10px',
+                    background: darkMode ? '#333' : "#fff",
+                    color: darkMode ? '#fff' : "#333",
+                },
+            })
         })
     }
 

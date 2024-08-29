@@ -1,4 +1,5 @@
 import { Textarea } from "@/components/textarea";
+import { ThemeContext } from "@/contexts/themeContext";
 import { db } from "@/services/firebaseConnection";
 import { Task as TaskType } from "@/types/taskType";
 import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, query, where } from "firebase/firestore";
@@ -6,7 +7,8 @@ import { GetServerSideProps } from "next";
 import { useSession } from "next-auth/react";
 import Head from "next/head";
 import { comment } from "postcss";
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useContext, useState } from "react";
+import toast from "react-hot-toast";
 import { FaTrash } from "react-icons/fa";
 
 interface TaskProps {
@@ -20,6 +22,7 @@ interface commentProps {
     taskId: string;
     user: string;
     name: string;
+    created: string
 }
 
 export default function Task({ item, allComments }: TaskProps) {
@@ -28,6 +31,7 @@ export default function Task({ item, allComments }: TaskProps) {
     const [input, setInput] = useState("")
     const [comments, setComments] = useState<commentProps[] | []>(allComments || [])
 
+    const { darkMode } = useContext(ThemeContext)
 
     async function HandleComment(e: FormEvent) {
         e.preventDefault()
@@ -55,12 +59,29 @@ export default function Task({ item, allComments }: TaskProps) {
                 taskId: item.id,
                 user: session.user.email,
                 name: session.user.name,
+                created: new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }),
             }
 
             setComments((oldItens) => [...oldItens, data])
             setInput("")
+
+            toast.success("Comentário enviado com sucesso!", {
+                icon: "✅",
+                style: {
+                    borderRadius: '10px',
+                    background: darkMode ? '#333' : "#fff",
+                    color: darkMode ? '#fff' : "#333",
+                },
+            })
         } catch (error) {
-            console.error(error)
+            toast.success("Falha ao enviar comentário.", {
+                icon: "❌",
+                style: {
+                    borderRadius: '10px',
+                    background: darkMode ? '#333' : "#fff",
+                    color: darkMode ? '#fff' : "#333",
+                },
+            })
         }
     }
 
@@ -70,8 +91,24 @@ export default function Task({ item, allComments }: TaskProps) {
             await deleteDoc(docRef)
 
             setComments((oldItems) => oldItems.filter(item => item.id !== id))
+
+            toast.success("tarefa deletada com sucesso!", {
+                icon: "✅",
+                style: {
+                    borderRadius: '10px',
+                    background: darkMode ? '#333' : "#fff",
+                    color: darkMode ? '#fff' : "#333",
+                },
+            })
         } catch (error) {
-            console.log(error)
+            toast.error("Ocorreu um erro ao adicionar a tarefa.", {
+                icon: "❌",
+                style: {
+                    borderRadius: '10px',
+                    background: darkMode ? '#333' : "#fff",
+                    color: darkMode ? '#fff' : "#333",
+                },
+            })
         }
     }
 
@@ -131,6 +168,9 @@ export default function Task({ item, allComments }: TaskProps) {
                                 )}
                             </div>
                             <p className="mt-4 whitespace-pre-wrap " >{comment.comment}</p>
+                            <span className="text-[12px] w-full" >
+                                Adicionado: {comment.created}
+                            </span>
                         </article>
                     ))}
                 </section>
@@ -177,6 +217,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
             taskId: doc.data()?.taskId,
             user: doc.data()?.user,
             name: doc.data()?.name,
+            created: new Date(doc.data().created.seconds * 1000).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }),
         })
     })
 

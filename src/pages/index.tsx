@@ -4,6 +4,8 @@ import hero from "../assets/hero.png"
 import { GetStaticProps } from "next";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/services/firebaseConnection";
+import toast from "react-hot-toast";
+import { useSession } from "next-auth/react";
 
 interface HomeProps {
   posts: number,
@@ -11,6 +13,8 @@ interface HomeProps {
 }
 
 export default function Home({ posts, comments }: HomeProps) {
+  const { data: session } = useSession()
+
   return (
     <div className="h-[calc(100vh-76px)] dark:bg-[#0f0f0f] transition-all">
       <Head>
