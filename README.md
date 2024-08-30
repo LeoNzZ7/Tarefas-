@@ -8,7 +8,11 @@ Tarefas+ é um aplicativo de gerenciamento de tarefas desenvolvido com Next.js, 
 
 Confira abaixo uma demonstração do funcionamento do projeto:
 
-[Insira aqui o GIF de demonstração do projeto]
+[TarefasPlusGif](https://github.com/LeoNzZ7/TarefasPlus/blob/master/tarefas_.gif)
+
+## Deploy
+
+O projeto está disponível online através do seguinte link: https://tarefas-plus-sand.vercel.app/
 
 ## Tecnologias Utilizadas
 
@@ -74,10 +78,6 @@ npm run dev
 ## Contribuição
 
 Contribuições são bem-vindas! Por favor, leia o guia de contribuição para saber como começar.
-
-## Licença
-
-Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE.md](http://LICENSE.md) para detalhes.
 
 ## Contato
 
