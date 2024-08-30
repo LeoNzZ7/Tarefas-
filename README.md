@@ -8,7 +8,7 @@ Tarefas+ é um aplicativo de gerenciamento de tarefas desenvolvido com Next.js, 
 
 Confira abaixo uma demonstração do funcionamento do projeto:
 
-[TarefasPlusGif](https://github.com/LeoNzZ7/TarefasPlus/blob/master/tarefas_.gif)
+![TarefasPlusGif](https://github.com/LeoNzZ7/TarefasPlus/blob/master/tarefas_.gif)
 
 ## Deploy
 
